@@ -1,0 +1,22 @@
+---
+import { en } from "../i18n/en";
+---
+
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="section-header section-header--center">
+      <h2>{en.howToApply.title}</h2>
+    </div>
+    <div class="steps">
+      {
+        en.howToApply.steps.map((step) => (
+          <div class="steps__item">
+            <span class="steps__number" />
+            <h3>{step.title}</h3>
+            <p style="color: var(--color-text-muted); margin: 0;">{step.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+---
+import { en } from "../i18n/en";
+import Icon from "./Icon.astro";
+---
+
+<section class="section section--alt">
+  <div class="container" style="max-width: 780px;">
+    <div class="notice notice--warning" style="display:flex; gap:12px; align-items:flex-start;">
+      <Icon name="alert-triangle" size={22} />
+      <div>
+        <h3 style="margin-bottom: 4px;">{en.riskDisclosure.title}</h3>
+        <p style="margin: 0;">{en.riskDisclosure.body}</p>
+      </div>
+    </div>
+  </div>
+</section>

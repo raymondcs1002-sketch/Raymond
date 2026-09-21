@@ -1,0 +1,21 @@
+---
+import { en } from "../i18n/en";
+---
+
+<section class="section">
+  <div class="container" style="max-width: 780px;">
+    <div class="section-header section-header--center">
+      <h2>{en.faq.title}</h2>
+    </div>
+    <div>
+      {
+        en.faq.items.map((item) => (
+          <details class="faq-item">
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

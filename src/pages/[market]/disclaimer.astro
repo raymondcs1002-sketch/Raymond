@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+import { en } from "../../i18n/en";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+---
+
+<!-- DRAFT: requires legal review before launch -->
+<Base country={country} siteName={siteName} content={content} title="Disclaimer" description={`Important disclosures about ${siteName} and ${content.entityName}.`}>
+  <section class="section">
+    <div class="container" style="max-width: 720px;">
+      <div class="notice notice--draft">{en.legal.draftNotice}</div>
+
+      <h1>Disclaimer</h1>
+
+      <h2>Not the lender</h2>
+      <p>
+        {siteName} is an application channel. Loans shown or referenced on this site are provided by
+        <strong>{content.entityName}</strong> ({content.licenseNo}), a licensed moneylender in {rules.label} — not
+        by this website directly.
+      </p>
+
+      <h2>No guaranteed approval</h2>
+      <p>
+        Any eligibility check, estimate, or calculator result on this site is indicative only and does not
+        constitute a loan offer or a guarantee of approval. All applications are subject to assessment.
+      </p>
+
+      <h2>Not financial advice</h2>
+      <p>
+        Nothing on this site constitutes financial, legal, or tax advice. Please consider your own financial
+        situation carefully before applying for a loan, and only borrow what you can comfortably repay.
+      </p>
+
+      <h2>High interest lending</h2>
+      <p>
+        This product may carry a higher interest rate than conventional bank loans. Late or missed repayments may
+        result in additional charges as set out in your loan agreement.
+      </p>
+
+      <h2>Rates and terms subject to change</h2>
+      <p>
+        Loan amounts, interest rates, fees, and eligibility criteria shown on this site may be updated at any time
+        without prior notice.
+      </p>
+    </div>
+  </section>
+</Base>

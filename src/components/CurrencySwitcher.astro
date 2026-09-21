@@ -1,0 +1,53 @@
+---
+import { COUNTRY_RULES, COUNTRY_TO_MARKET, type CountryCode } from "../lib/countries";
+import { en } from "../i18n/en";
+
+interface Props {
+  country: CountryCode;
+  /** Countries currently enabled in Global Config — only shown when there's more than one. */
+  enabledCountries: CountryCode[];
+  /** Current pathname, e.g. "/sgd/about" — used to build the equivalent path for the other market. */
+  path: string;
+}
+
+const { country, enabledCountries, path } = Astro.props;
+const rest = path.replace(/^\/(myr|sgd)/, "");
+---
+
+<div class="currency-switcher" data-currency-switcher>
+  <button type="button" class="currency-switcher__button" aria-haspopup="true" aria-expanded="false" data-currency-toggle>
+    <span aria-hidden="true">🌐</span>
+    {COUNTRY_RULES[country].label}
+  </button>
+  <div class="currency-switcher__menu" data-currency-menu>
+    {
+      enabledCountries.map((c) => (
+        <a href={`/${COUNTRY_TO_MARKET[c]}${rest || "/"}`} aria-current={c === country ? "true" : "false"}>
+          {COUNTRY_RULES[c].label}
+        </a>
+      ))
+    }
+  </div>
+  <span class="visually-hidden">{en.currencySwitcher.label}</span>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-currency-switcher]").forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>("[data-currency-toggle]");
+    const menu = root.querySelector<HTMLElement>("[data-currency-menu]");
+    if (!toggle || !menu) return;
+
+    toggle.addEventListener("click", () => {
+      const open = menu.dataset.open === "true";
+      menu.dataset.open = open ? "false" : "true";
+      toggle.setAttribute("aria-expanded", open ? "false" : "true");
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!root.contains(event.target as Node)) {
+        menu.dataset.open = "false";
+        toggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
+</script>

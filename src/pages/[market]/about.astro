@@ -1,0 +1,38 @@
+---
+import Base from "../../layouts/Base.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+---
+
+<Base country={country} siteName={siteName} content={content} title="About us" description={`About ${content.entityName}, our lending partner in ${rules.label}.`}>
+  <section class="section">
+    <div class="container" style="max-width: 720px;">
+      <h1>About us</h1>
+      <p>
+        {siteName} helps you check your eligibility for a personal loan and apply in minutes —
+        without paperwork runaround or confusing terms. Loans are provided by <strong>{content.entityName}</strong>
+        ({content.licenseNo}).
+      </p>
+      <h2>Our approach</h2>
+      <p>
+        We believe borrowing should be simple and transparent. Every applicant sees the loan amount, interest, and
+        fees upfront before applying — and our team follows up personally on WhatsApp, so you always know where your
+        application stands.
+      </p>
+      <h2>Responsible lending</h2>
+      <p>
+        We only recommend loan amounts and terms suited to your income, not the maximum you might qualify for. If a
+        loan isn't the right fit for your situation, we'll tell you.
+      </p>
+      <h2>Contact</h2>
+      <p>
+        Questions about {content.entityName} or an existing application? Reach us at
+        {" "}<a href={`mailto:${content.supportEmail}`}>{content.supportEmail}</a> or via WhatsApp.
+      </p>
+    </div>
+  </section>
+</Base>

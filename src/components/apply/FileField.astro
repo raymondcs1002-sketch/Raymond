@@ -1,0 +1,35 @@
+---
+import type { DocumentKind } from "../../lib/documents";
+import Icon from "../Icon.astro";
+
+interface Props {
+  fieldId: string;
+  label: string;
+  kind: DocumentKind;
+  index: number;
+  accept: string;
+  capture?: "user" | "environment";
+  hint?: string;
+  /** Alternate label/hint swapped in via JS when a related choice elsewhere in the form changes (see applyResidencyStatus in apply.ts). */
+  altLabel?: string;
+  altHint?: string;
+}
+
+const { fieldId, label, kind, index, accept, capture, hint, altLabel, altHint } = Astro.props;
+---
+
+<div class="form-field" data-file-field data-kind={kind} data-index={index}>
+  <label for={fieldId} data-file-label data-alt-label={altLabel}>{label}</label>
+  <label class="file-field" for={fieldId} data-status="empty">
+    <Icon name="upload" size={22} />
+    <div><strong>Tap to upload</strong></div>
+    <div class="file-field__status" data-file-status>No file selected</div>
+    <input type="file" id={fieldId} accept={accept} capture={capture} data-file-input />
+  </label>
+  {(hint || altHint) && (
+    <p class="hint" data-file-hint data-alt-label={altHint} hidden={!hint}>
+      {hint ?? ""}
+    </p>
+  )}
+  <p class="error" data-file-error></p>
+</div>

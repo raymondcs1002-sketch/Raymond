@@ -1,0 +1,40 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Icon from "../../../components/Icon.astro";
+import { resolveMarketParam } from "../../../lib/page-guard";
+import { en } from "../../../i18n/en";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { market, country, content } = resolved;
+const { siteName } = Astro.locals.siteContent;
+
+const refCode = Astro.url.searchParams.get("ref");
+if (!refCode) return Astro.redirect(`/${market}/`, 302);
+
+const whatsappHref = `https://wa.me/${content.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi, I just submitted application ${refCode}`)}`;
+---
+
+<Base country={country} siteName={siteName} content={content} title={en.success.title} description="Your loan application has been received.">
+  <section class="section">
+    <div class="container success-card">
+      <div class="success-card__icon">
+        <Icon name="check-circle" size={64} />
+      </div>
+      <h1>{en.success.title}</h1>
+      <p>
+        {en.success.message} <strong>{content.approvalTime}</strong> on WhatsApp.
+      </p>
+      <span class="success-card__ref">{refCode}</span>
+      <p style="color: var(--color-text-muted); font-size: 0.9rem;">{en.success.refLabel}</p>
+
+      <div class="hero__actions" style="justify-content: center; margin-top: 24px;">
+        <a href={whatsappHref} class="btn btn-primary">
+          <Icon name="message" size={18} />
+          {en.success.whatsappCta}
+        </a>
+        <a href={`/${market}/`} class="btn btn-secondary">{en.success.backHome}</a>
+      </div>
+    </div>
+  </section>
+</Base>

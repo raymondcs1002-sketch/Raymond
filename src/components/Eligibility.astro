@@ -1,0 +1,56 @@
+---
+import type { CountryRules } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import { en } from "../i18n/en";
+import { formatMoney } from "../lib/format";
+import Icon from "./Icon.astro";
+
+interface Props {
+  content: CountryContent;
+  rules: CountryRules;
+}
+
+const { content, rules } = Astro.props;
+
+const items = [
+  `Aged between ${content.minAge} and ${content.maxAge} years`,
+  content.residency,
+  `Stable monthly income of at least ${formatMoney(content.minMonthlyIncome, rules)}`,
+  `Valid ${rules.idLabel}`,
+  "An active WhatsApp number for follow-up",
+];
+---
+
+<section class="section" id="eligibility">
+  <div class="container">
+    <div class="grid grid--2">
+      <div>
+        <h2>{en.eligibility.title}</h2>
+        <ul class="check-list">
+          {
+            items.map((item) => (
+              <li>
+                <span class="check-list__icon"><Icon name="check" size={18} /></span>
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div>
+        <h2>{en.documents.title}</h2>
+        <ul class="check-list">
+          {
+            en.documents.items.map((item) => (
+              <li>
+                <span class="check-list__icon"><Icon name="file-text" size={18} /></span>
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

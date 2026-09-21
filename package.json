@@ -1,0 +1,25 @@
+{
+  "name": "myloan",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^11.0.10",
+    "@supabase/supabase-js": "^2.116.0",
+    "@vercel/global-config": "^1.5.1",
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
+  }
+}

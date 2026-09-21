@@ -1,0 +1,52 @@
+---
+import type { CountryCode, CountryRules } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import { en } from "../i18n/en";
+import { formatMoney, formatTenure } from "../lib/format";
+import { getMinMaxAmount, getMinMaxTenure } from "../lib/repayment";
+import ApplyButton from "./ApplyButton.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  country: CountryCode;
+  content: CountryContent;
+  rules: CountryRules;
+}
+
+const { country, content, rules } = Astro.props;
+const amountRange = getMinMaxAmount(content.repaymentTable);
+const tenureRange = getMinMaxTenure(content.repaymentTable);
+---
+
+<section class="hero">
+  <div class="container hero__grid">
+    <div>
+      <span class="trust-badge">
+        <Icon name="star" size={14} />
+        {en.trust.badge}
+      </span>
+      <span class="eyebrow">{en.hero.eyebrow}</span>
+      <h1>{en.hero.title}</h1>
+      <p style="font-size: 1.1rem; color: var(--color-text-muted); max-width: 46ch;">{en.hero.subtitle}</p>
+      <div class="hero__actions">
+        <ApplyButton country={country} label={en.hero.cta} />
+        <a href="#how-it-works" class="btn btn-secondary">{en.hero.secondaryCta}</a>
+      </div>
+    </div>
+
+    <div class="hero__card">
+      <div class="hero__stat-row">
+        <span class="hero__stat-label">{en.product.amountLabel}</span>
+        <span class="hero__stat-value">{formatMoney(amountRange.min, rules)}–{formatMoney(amountRange.max, rules)}</span>
+      </div>
+      <div class="hero__stat-row">
+        <span class="hero__stat-label">{en.product.tenureLabel}</span>
+        <span class="hero__stat-value">{formatTenure(tenureRange.min)}–{formatTenure(tenureRange.max)}</span>
+      </div>
+      <div class="hero__stat-row">
+        <span class="hero__stat-label">{en.product.approvalLabel}</span>
+        <span class="hero__stat-value">{content.approvalTime}</span>
+      </div>
+    </div>
+  </div>
+</section>

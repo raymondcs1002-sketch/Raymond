@@ -1,0 +1,6 @@
+---
+// Thin rewrite so the SGD market's pages are reachable without a URL
+// prefix while MYR stays dormant/reachable directly at /myr/... if
+// re-enabled later. See src/pages/index.astro for the same pattern.
+return Astro.rewrite("/sgd/apply");
+---

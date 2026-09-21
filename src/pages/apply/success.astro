@@ -1,0 +1,4 @@
+---
+// Preserve the ?ref= query string when rewriting.
+return Astro.rewrite(`/sgd/apply/success${Astro.url.search}`);
+---

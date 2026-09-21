@@ -1,0 +1,20 @@
+---
+import { COUNTRY_TO_MARKET, type CountryCode } from "../lib/countries";
+import { en } from "../i18n/en";
+
+interface Props {
+  country: CountryCode;
+  label?: string;
+  variant?: "primary" | "secondary";
+  block?: boolean;
+  class?: string;
+}
+
+const { country, label = en.nav.apply, variant = "primary", block = false, class: className } = Astro.props;
+const market = COUNTRY_TO_MARKET[country];
+const classes = ["btn", variant === "primary" ? "btn-primary" : "btn-secondary", block ? "btn-block" : "", className]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<a href={`/${market}/apply`} class={classes}>{label}</a>

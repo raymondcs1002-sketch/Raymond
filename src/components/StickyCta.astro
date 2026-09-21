@@ -1,0 +1,24 @@
+---
+import { COUNTRY_TO_MARKET, type CountryCode } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import { en } from "../i18n/en";
+import Icon from "./Icon.astro";
+
+interface Props {
+  country: CountryCode;
+  content: CountryContent;
+}
+
+const { country, content } = Astro.props;
+const market = COUNTRY_TO_MARKET[country];
+const whatsappHref = `https://wa.me/${content.whatsappNumber.replace(/[^0-9]/g, "")}`;
+---
+
+<div class="sticky-cta">
+  <div class="container" style="display:flex; gap: 12px; padding-inline: 0;">
+    <a href={whatsappHref} class="btn btn-secondary" style="flex: 0 0 auto;" aria-label={en.contact.whatsappCta}>
+      <Icon name="message" size={20} />
+    </a>
+    <a href={`/${market}/apply`} class="btn btn-primary btn-block">{en.nav.apply}</a>
+  </div>
+</div>

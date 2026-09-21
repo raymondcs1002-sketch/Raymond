@@ -1,0 +1,107 @@
+---
+import { COUNTRY_TO_MARKET, type CountryCode } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import { getEnabledCountries } from "../lib/config";
+import { en } from "../i18n/en";
+import CurrencySwitcher from "./CurrencySwitcher.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  country: CountryCode;
+  siteName: string;
+  content: CountryContent;
+}
+
+const { country, siteName, content } = Astro.props;
+const path = Astro.url.pathname;
+const base = `/${COUNTRY_TO_MARKET[country]}`;
+const enabledCountries = getEnabledCountries(Astro.locals.siteContent);
+const whatsappHref = `https://wa.me/${content.whatsappNumber.replace(/[^0-9]/g, "")}`;
+
+const navLinks = [
+  { href: `${base}/`, label: en.nav.home, icon: "home" },
+  { href: `${base}/#how-it-works`, label: en.nav.howItWorks, icon: "info" },
+  { href: `${base}/#calculator`, label: en.nav.calculator, icon: "calculator" },
+  { href: `${base}/about`, label: en.nav.about, icon: "smile" },
+  { href: `${base}/contact`, label: en.nav.contact, icon: "phone" },
+];
+---
+
+<header class="site-header">
+  <div class="container site-header__bar">
+    <a href={`${base}/`} class="site-header__brand">
+      {siteName}
+    </a>
+
+    <nav class="site-header__nav" aria-label="Primary">
+      {navLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+    </nav>
+
+    <div class="site-header__actions">
+      {enabledCountries.length > 1 && <CurrencySwitcher country={country} enabledCountries={enabledCountries} path={path} />}
+      <a href={`${base}/apply`} class="btn btn-primary">{en.nav.apply}</a>
+      <button type="button" class="site-header__menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" data-menu-toggle>
+        <span class="visually-hidden">Open menu</span>
+        <Icon name="menu" size={20} />
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-drawer-backdrop" data-drawer-backdrop></div>
+<nav id="mobile-drawer" class="mobile-drawer" aria-label="Mobile" data-mobile-drawer>
+  <div class="mobile-drawer__header">
+    <span class="site-header__brand" style="font-size:1.05rem;">{siteName}</span>
+    <button type="button" class="mobile-drawer__close" aria-label="Close menu" data-drawer-close>
+      <Icon name="x" size={20} />
+    </button>
+  </div>
+
+  <div class="mobile-drawer__links">
+    {
+      navLinks.map((link) => (
+        <a href={link.href} data-drawer-link>
+          <Icon name={link.icon} size={18} />
+          <span>{link.label}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <div class="mobile-drawer__footer">
+    <a href={whatsappHref} class="btn btn-secondary btn-block" data-drawer-link>
+      <Icon name="message" size={18} />
+      {en.contact.whatsappCta}
+    </a>
+    <a href={`${base}/apply`} class="btn btn-primary btn-block" data-drawer-link>{en.nav.apply}</a>
+  </div>
+</nav>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const closeBtn = document.querySelector<HTMLButtonElement>("[data-drawer-close]");
+  const drawer = document.querySelector<HTMLElement>("[data-mobile-drawer]");
+  const backdrop = document.querySelector<HTMLElement>("[data-drawer-backdrop]");
+
+  function openDrawer() {
+    drawer?.setAttribute("data-open", "true");
+    backdrop?.setAttribute("data-open", "true");
+    toggle?.setAttribute("aria-expanded", "true");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDrawer() {
+    drawer?.setAttribute("data-open", "false");
+    backdrop?.setAttribute("data-open", "false");
+    toggle?.setAttribute("aria-expanded", "false");
+    document.body.style.overflow = "";
+  }
+
+  toggle?.addEventListener("click", openDrawer);
+  closeBtn?.addEventListener("click", closeDrawer);
+  backdrop?.addEventListener("click", closeDrawer);
+  drawer?.querySelectorAll("[data-drawer-link]").forEach((link) => link.addEventListener("click", closeDrawer));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDrawer();
+  });
+</script>

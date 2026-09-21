@@ -1,0 +1,38 @@
+---
+import Base from "../../layouts/Base.astro";
+import Icon from "../../components/Icon.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+import { en } from "../../i18n/en";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+const whatsappHref = `https://wa.me/${content.whatsappNumber.replace(/[^0-9]/g, "")}`;
+---
+
+<Base country={country} siteName={siteName} content={content} title="Contact" description={`Contact ${content.entityName} in ${rules.label}.`}>
+  <section class="section">
+    <div class="container" style="max-width: 560px;">
+      <h1>{en.contact.title}</h1>
+      <p style="color: var(--color-text-muted);">
+        Have a question about your application, or need help before applying? We're here on WhatsApp and email.
+      </p>
+
+      <ul class="check-list" style="margin-top: 24px;">
+        <li>
+          <span class="check-list__icon"><Icon name="message" size={18} /></span>
+          <span><a href={whatsappHref}>{en.contact.whatsappCta}</a></span>
+        </li>
+        <li>
+          <span class="check-list__icon"><Icon name="mail" size={18} /></span>
+          <span><a href={`mailto:${content.supportEmail}`}>{content.supportEmail}</a></span>
+        </li>
+        <li>
+          <span class="check-list__icon"><Icon name="map-pin" size={18} /></span>
+          <span>{content.officeAddress}</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+</Base>

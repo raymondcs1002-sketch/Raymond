@@ -1,0 +1,378 @@
+---
+import Base from "../../layouts/Base.astro";
+import FileField from "../../components/apply/FileField.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+import { en } from "../../i18n/en";
+import { formatMoney } from "../../lib/format";
+import { getMinMaxAmount, getTenureOptions, AMOUNT_STEP } from "../../lib/repayment";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+
+const schedule = content.repaymentTable;
+const { min: minAmount, max: maxAmount } = getMinMaxAmount(schedule);
+const defaultAmount = Math.round((minAmount + maxAmount) / 2 / AMOUNT_STEP) * AMOUNT_STEP;
+const defaultOptions = getTenureOptions(schedule, defaultAmount);
+const defaultTenure = defaultOptions[Math.floor(defaultOptions.length / 2)]?.tenureMonths;
+const maxDob = new Date().toISOString().slice(0, 10);
+
+// Both markets collect the same two family contacts, under the name each
+// market's team uses: "emergency contact" in Malaysia, "next of kin" in
+// Singapore. SG used to ask for both, which meant filling the same people twice.
+const personal = en.apply.steps.personal;
+const contacts =
+  country === "sg"
+    ? { field: "nextOfKin", title: personal.nextOfKinTitle, hint: personal.nextOfKinHint, heading: personal.nextOfKinHeading }
+    : { field: "emergencyContact", title: personal.emergencyTitle, hint: personal.emergencyHint, heading: personal.emergencyContactHeading };
+---
+
+<Base
+  country={country}
+  siteName={siteName}
+  content={content}
+  title={en.apply.title}
+  description={`Apply for a personal loan in ${rules.label} — takes about 5 minutes.`}
+>
+  <section class="section">
+    <div class="container" style="max-width: 640px;">
+      <h1>{en.apply.title}</h1>
+
+      <div class="apply-progress">
+        {Array.from({ length: 5 }).map((_, i) => <div class="apply-progress__bar" data-progress-bar data-state={i === 0 ? "active" : "todo"} />)}
+      </div>
+
+      <form
+        data-apply-root
+        data-country={country}
+        data-min-age={content.minAge}
+        data-max-age={content.maxAge}
+        data-min-income={content.minMonthlyIncome}
+        data-schedule={JSON.stringify(schedule)}
+        novalidate
+      >
+        <div class="honeypot-field" aria-hidden="true">
+          <label for="company_website">Company website</label>
+          <input type="text" id="company_website" data-field="honeypot" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <!-- Step 1: Loan -->
+        <div class="apply-step" data-step="1" data-active="true">
+          <p style="color: var(--color-text-muted);">
+            {en.apply.stepLabel} <span data-step-indicator>1</span> {en.apply.of} 5 — {en.apply.steps.loan.title}
+          </p>
+
+          <div class="field" data-field-wrap="loanAmount">
+            <label for="loanAmount">
+              <span>{en.product.amountLabel}</span>
+              <output id="loan-amount-output" for="loanAmount">{formatMoney(defaultAmount, rules)}</output>
+            </label>
+            <input type="range" id="loanAmount" data-field="loanAmount" data-loan-amount min={minAmount} max={maxAmount} step={AMOUNT_STEP} value={defaultAmount} />
+            <p class="error" data-error-for="loanAmount" />
+          </div>
+
+          <div class="form-field" data-field-wrap="tenureMonths">
+            <label>{en.product.tenureLabel}</label>
+            <input type="hidden" id="tenureMonths" data-field="tenureMonths" value={defaultTenure} />
+            <div class="tenure-pills" data-loan-tenure-group>
+              {
+                defaultOptions.map((option) => (
+                  <button type="button" class="tenure-pill" data-tenure-pill data-value={option.tenureMonths} aria-pressed={option.tenureMonths === defaultTenure}>
+                    {option.tenureMonths} {en.calculator.months}
+                  </button>
+                ))
+              }
+            </div>
+            <p class="error" data-error-for="tenureMonths" />
+          </div>
+
+          <div class="calculator__results" style="margin-bottom: 20px;">
+            <div class="calculator__row calculator__row--total">
+              <span>{en.calculator.monthlyInstalment}</span>
+              <span data-loan-instalment-output />
+            </div>
+          </div>
+
+          <div class="form-field" data-field-wrap="purpose">
+            <label for="purpose">{en.apply.steps.loan.purposeLabel}</label>
+            <textarea id="purpose" data-field="purpose" rows="3" placeholder={en.apply.steps.loan.purposePlaceholder} />
+            <p class="error" data-error-for="purpose" />
+          </div>
+
+          <div class="apply-nav">
+            <span />
+            <button type="button" class="btn btn-primary" data-next>{en.apply.buttons.next}</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Personal -->
+        <div class="apply-step" data-step="2">
+          <p style="color: var(--color-text-muted);">
+            {en.apply.stepLabel} <span data-step-indicator>2</span> {en.apply.of} 5 — {en.apply.steps.personal.title}
+          </p>
+
+          <div class="form-field" data-field-wrap="fullName">
+            <label for="fullName">{en.apply.steps.personal.fullNameLabel}</label>
+            <input type="text" id="fullName" data-field="fullName" autocomplete="name" />
+            <p class="error" data-error-for="fullName" />
+          </div>
+
+          {country === "sg" && (
+            <>
+              <div class="form-field" data-field-wrap="residencyStatus">
+                <label for="residencyStatus">{en.apply.steps.personal.residencyStatusLabel}</label>
+                <select id="residencyStatus" data-field="residencyStatus" data-residency-select>
+                  <option value="">Select…</option>
+                  {en.apply.steps.personal.residencyStatusOptions.map((option) => <option value={option.value}>{option.label}</option>)}
+                </select>
+                <p class="error" data-error-for="residencyStatus" />
+              </div>
+
+              <div class="form-field" data-field-wrap="passIssueDate" data-pass-only style="display: none;">
+                <label for="passIssueDate">{en.apply.steps.personal.passIssueDateLabel}</label>
+                <input type="date" id="passIssueDate" data-field="passIssueDate" max={maxDob} />
+                <p class="error" data-error-for="passIssueDate" />
+              </div>
+
+              <div class="form-field" data-field-wrap="passExpiryDate" data-pass-only style="display: none;">
+                <label for="passExpiryDate">{en.apply.steps.personal.passExpiryDateLabel}</label>
+                <input type="date" id="passExpiryDate" data-field="passExpiryDate" />
+                <p class="error" data-error-for="passExpiryDate" />
+              </div>
+            </>
+          )}
+
+          <div class="form-field" data-field-wrap="idNumber">
+            <label for="idNumber" data-id-number-label>
+              {country === "sg" ? en.apply.steps.personal.idNumberLabelSg : en.apply.steps.personal.idNumberLabel}
+            </label>
+            <input
+              type="text"
+              id="idNumber"
+              data-field="idNumber"
+              placeholder={rules.idExample}
+              data-alt-placeholder={country === "sg" ? rules.finExample : undefined}
+              autocomplete="off"
+            />
+            <p class="error" data-error-for="idNumber" />
+          </div>
+
+          <div class="form-field" data-field-wrap="dateOfBirth">
+            <label for="dateOfBirth">{en.apply.steps.personal.dobLabel}</label>
+            <input type="date" id="dateOfBirth" data-field="dateOfBirth" max={maxDob} />
+            <p class="error" data-error-for="dateOfBirth" />
+          </div>
+
+          <div class="form-field" data-field-wrap="whatsapp">
+            <label for="whatsapp">{en.apply.steps.personal.whatsappLabel}</label>
+            <input type="tel" id="whatsapp" data-field="whatsapp" inputmode="tel" placeholder={`+${rules.dialCode} ${rules.phoneExample}`} autocomplete="tel" />
+            <p class="hint">{en.apply.steps.personal.whatsappHint}</p>
+            <p class="error" data-error-for="whatsapp" />
+          </div>
+
+          <div class="form-field" data-field-wrap="email">
+            <label for="email">{en.apply.steps.personal.emailLabel}</label>
+            <input type="email" id="email" data-field="email" autocomplete="email" />
+            <p class="error" data-error-for="email" />
+          </div>
+
+          <div class="form-field" data-field-wrap="residesLocally">
+            <label>{en.apply.steps.personal.residesLocallyLabel}</label>
+            <input type="hidden" id="residesLocally" data-field="residesLocally" value="" />
+            <div class="tenure-pills" data-tristate-group="residesLocally">
+              <button type="button" class="tenure-pill" data-tristate-option data-value="true" aria-pressed="false">{en.apply.steps.personal.residesLocallyYes}</button>
+              <button type="button" class="tenure-pill" data-tristate-option data-value="false" aria-pressed="false">{en.apply.steps.personal.residesLocallyNo}</button>
+            </div>
+            <p class="error" data-error-for="residesLocally" />
+          </div>
+
+          <h2 class="form-group-title">{contacts.title}</h2>
+          <p class="form-group-hint">{contacts.hint}</p>
+
+          {
+            ([1, 2] as const).map((n) => (
+              <fieldset class="form-group">
+                <legend>{contacts.heading} {n}</legend>
+
+                <div class="form-field" data-field-wrap={`${contacts.field}${n}Name`}>
+                  <label for={`${contacts.field}${n}Name`}>{en.apply.steps.personal.contactNameLabel}</label>
+                  <input type="text" id={`${contacts.field}${n}Name`} data-field={`${contacts.field}${n}Name`} autocomplete="off" />
+                  <p class="error" data-error-for={`${contacts.field}${n}Name`} />
+                </div>
+
+                <div class="form-field" data-field-wrap={`${contacts.field}${n}Relationship`}>
+                  <label for={`${contacts.field}${n}Relationship`}>{en.apply.steps.personal.relationshipLabel}</label>
+                  <select id={`${contacts.field}${n}Relationship`} data-field={`${contacts.field}${n}Relationship`}>
+                    <option value="">Select…</option>
+                    {en.apply.steps.personal.relationshipOptions.map((option) => <option value={option.value}>{option.label}</option>)}
+                  </select>
+                  <p class="error" data-error-for={`${contacts.field}${n}Relationship`} />
+                </div>
+
+                <div class="form-field" data-field-wrap={`${contacts.field}${n}Phone`}>
+                  <label for={`${contacts.field}${n}Phone`}>{en.apply.steps.personal.contactPhoneLabel}</label>
+                  <input type="tel" id={`${contacts.field}${n}Phone`} data-field={`${contacts.field}${n}Phone`} inputmode="tel" placeholder={`+${rules.dialCode} ${rules.phoneExample}`} autocomplete="off" />
+                  <p class="error" data-error-for={`${contacts.field}${n}Phone`} />
+                </div>
+
+                <FileField
+                  fieldId={`contactProof${n - 1}`}
+                  label={en.apply.steps.personal.contactProofLabel}
+                  kind="emergency_proof"
+                  index={n - 1}
+                  accept="image/jpeg,image/png,image/webp"
+                  hint={en.apply.steps.personal.contactProofHint}
+                />
+              </fieldset>
+            ))
+          }
+
+          <div class="apply-nav">
+            <button type="button" class="btn btn-secondary" data-back>{en.apply.buttons.back}</button>
+            <button type="button" class="btn btn-primary" data-next>{en.apply.buttons.next}</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Employment -->
+        <div class="apply-step" data-step="3">
+          <p style="color: var(--color-text-muted);">
+            {en.apply.stepLabel} <span data-step-indicator>3</span> {en.apply.of} 5 — {en.apply.steps.employment.title}
+          </p>
+
+          <div class="form-field" data-field-wrap="employmentStatus">
+            <label for="employmentStatus">{en.apply.steps.employment.statusLabel}</label>
+            <select id="employmentStatus" data-field="employmentStatus">
+              <option value="">Select…</option>
+              {en.apply.steps.employment.statusOptions.map((option) => <option value={option}>{option}</option>)}
+            </select>
+            <p class="error" data-error-for="employmentStatus" />
+          </div>
+
+          <div class="form-field" data-field-wrap="employerName">
+            <label for="employerName">{en.apply.steps.employment.employerLabel}</label>
+            <input type="text" id="employerName" data-field="employerName" autocomplete="organization" />
+            <p class="error" data-error-for="employerName" />
+          </div>
+
+          <div class="form-field" data-field-wrap="officePhone">
+            <label for="officePhone">{en.apply.steps.employment.officePhoneLabel}</label>
+            <input type="tel" id="officePhone" data-field="officePhone" inputmode="tel" placeholder={`+${rules.dialCode} 6123 4567`} autocomplete="off" />
+            <p class="error" data-error-for="officePhone" />
+          </div>
+
+          <div class="form-field" data-field-wrap="monthlyIncome">
+            <label for="monthlyIncome">{en.apply.steps.employment.incomeLabel} ({rules.currencySymbol})</label>
+            <input type="number" id="monthlyIncome" data-field="monthlyIncome" min="0" step="1" inputmode="numeric" />
+            <p class="error" data-error-for="monthlyIncome" />
+          </div>
+
+          <div class="form-field" data-field-wrap="bankName">
+            <label for="bankName">{en.apply.steps.employment.bankNameLabel}</label>
+            <input type="text" id="bankName" data-field="bankName" autocomplete="off" />
+            <p class="error" data-error-for="bankName" />
+          </div>
+
+          <div class="form-field" data-field-wrap="bankAccountNumber">
+            <label for="bankAccountNumber">{en.apply.steps.employment.bankAccountNumberLabel}</label>
+            <input type="text" id="bankAccountNumber" data-field="bankAccountNumber" inputmode="numeric" autocomplete="off" />
+            <p class="error" data-error-for="bankAccountNumber" />
+          </div>
+
+          <div class="apply-nav">
+            <button type="button" class="btn btn-secondary" data-back>{en.apply.buttons.back}</button>
+            <button type="button" class="btn btn-primary" data-next>{en.apply.buttons.next}</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Documents -->
+        <div class="apply-step" data-step="4">
+          <p style="color: var(--color-text-muted);">
+            {en.apply.stepLabel} <span data-step-indicator>4</span> {en.apply.of} 5 — {en.apply.steps.documents.title}
+          </p>
+
+          <FileField
+            fieldId="idFront"
+            label={en.apply.steps.documents.idFrontLabel}
+            kind="id_front"
+            index={0}
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            altLabel={country === "sg" ? en.apply.steps.documents.idFrontLabelWorkPass : undefined}
+            altHint={country === "sg" ? en.apply.steps.documents.idFrontHintWorkPass : undefined}
+          />
+          <FileField
+            fieldId="idBack"
+            label={en.apply.steps.documents.idBackLabel}
+            kind="id_back"
+            index={0}
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            altLabel={country === "sg" ? en.apply.steps.documents.idBackLabelWorkPass : undefined}
+            altHint={country === "sg" ? en.apply.steps.documents.idBackHintWorkPass : undefined}
+          />
+          <FileField fieldId="selfie" label={en.apply.steps.documents.selfieLabel} kind="selfie" index={0} accept="image/jpeg,image/png,image/webp" capture="user" />
+          <FileField
+            fieldId="addressProof"
+            label={en.apply.steps.documents.addressProofLabel}
+            kind="address_proof"
+            index={0}
+            accept="image/jpeg,image/png,image/webp"
+            hint="A recent utility bill, bank statement, or tenancy agreement with your name and address."
+          />
+          <FileField
+            fieldId="payslip0"
+            label={`${en.apply.steps.documents.payslipLabel} 1`}
+            kind="payslip"
+            index={0}
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            hint="Photo or PDF."
+          />
+          <FileField
+            fieldId="payslip1"
+            label={`${en.apply.steps.documents.payslipLabel} 2 (optional)`}
+            kind="payslip"
+            index={1}
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+          />
+          <FileField
+            fieldId="payslip2"
+            label={`${en.apply.steps.documents.payslipLabel} 3 (optional)`}
+            kind="payslip"
+            index={2}
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+          />
+
+          <div class="apply-nav">
+            <button type="button" class="btn btn-secondary" data-back>{en.apply.buttons.back}</button>
+            <button type="button" class="btn btn-primary" data-next>{en.apply.buttons.next}</button>
+          </div>
+        </div>
+
+        <!-- Step 5: Review -->
+        <div class="apply-step" data-step="5">
+          <p style="color: var(--color-text-muted);">
+            {en.apply.stepLabel} <span data-step-indicator>5</span> {en.apply.of} 5 — {en.apply.steps.review.title}
+          </p>
+
+          <div class="apply-summary" data-summary />
+
+          <div class="checkbox-field" data-field-wrap="consent">
+            <input type="checkbox" id="consent" data-field="consent" />
+            <label for="consent">{en.apply.steps.review.consentLabel}</label>
+          </div>
+          <p class="error" data-error-for="consent" />
+
+          <div class="apply-nav">
+            <button type="button" class="btn btn-secondary" data-back>{en.apply.buttons.back}</button>
+            <button type="submit" class="btn btn-primary" data-submit>{en.apply.steps.review.submit}</button>
+          </div>
+
+          <p class="form-status" data-form-status />
+        </div>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script src="../../scripts/apply.ts"></script>

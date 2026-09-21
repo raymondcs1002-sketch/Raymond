@@ -1,0 +1,13 @@
+{
+  "name": "Fast Personal Loans — Malaysia & Singapore",
+  "short_name": "Loan App",
+  "description": "Check your eligibility and apply for a personal loan in Malaysia or Singapore in minutes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

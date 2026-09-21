@@ -1,0 +1,404 @@
+---
+// Single-application review page — no login. Security is entirely by
+// possession of the `token` in the URL (a random UUID), which is only
+// ever sent in the notification email. Never cached (see middleware.ts),
+// never indexed (see meta tag below), and documents are shown via
+// short-lived signed URLs rather than exposing storage paths.
+import "../../styles/global.css";
+import Icon from "../../components/Icon.astro";
+import { selectRows, createSignedReadUrl, isSupabaseConfigured } from "../../lib/supabase";
+import type { DocumentKind } from "../../lib/documents";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const token = Astro.params.token;
+
+interface ApplicationRow {
+  id: string;
+  ref_code: string;
+  country: string;
+  status: string;
+  full_name: string;
+  id_type: string;
+  id_number: string;
+  date_of_birth: string;
+  whatsapp: string;
+  email: string;
+  employment_status: string;
+  employer_name: string;
+  monthly_income: number;
+  currency: string;
+  loan_amount: number;
+  tenure_months: number;
+  purpose: string;
+  resides_locally: boolean;
+  residency_status: string | null;
+  pass_issue_date: string | null;
+  pass_expiry_date: string | null;
+  emergency_contact_1_name: string | null;
+  emergency_contact_1_relationship: string | null;
+  emergency_contact_1_phone: string | null;
+  emergency_contact_2_name: string | null;
+  emergency_contact_2_relationship: string | null;
+  emergency_contact_2_phone: string | null;
+  office_phone: string | null;
+  bank_name: string | null;
+  bank_account_number: string | null;
+  next_of_kin_1_name: string | null;
+  next_of_kin_1_relationship: string | null;
+  next_of_kin_1_phone: string | null;
+  next_of_kin_2_name: string | null;
+  next_of_kin_2_relationship: string | null;
+  next_of_kin_2_phone: string | null;
+  created_at: string;
+  submitted_at: string | null;
+}
+
+interface DocumentRow {
+  kind: DocumentKind;
+  storage_path: string;
+  mime: string;
+}
+
+const RESIDENCY_LABELS: Record<string, string> = {
+  singaporean: "Singaporean",
+  pr: "Permanent Resident",
+  work_permit: "Work Permit",
+  s_pass: "S Pass",
+  employment_pass: "Employment Pass",
+  long_term_pass: "Long Term Pass",
+};
+
+const RELATIONSHIP_LABELS: Record<string, string> = {
+  parent: "Parent",
+  spouse: "Spouse",
+  sibling: "Sibling",
+  child: "Child",
+  other_relative: "Other relative",
+};
+
+const DOC_LABELS: Record<DocumentKind, string> = {
+  id_front: "ID — front",
+  id_back: "ID — back",
+  selfie: "Selfie",
+  address_proof: "Proof of address",
+  emergency_proof: "Chat with contact",
+  payslip: "Payslip / income proof",
+};
+
+/** "Chat with contact 2" — the index lives in the storage path, e.g. "<id>/emergency_proof-1.jpg". */
+function docLabel(doc: DocumentRow): string {
+  if (doc.kind !== "emergency_proof" && doc.kind !== "payslip") return DOC_LABELS[doc.kind];
+  const index = Number(/-(\d+)\.\w+$/.exec(doc.storage_path)?.[1] ?? 0);
+  return `${DOC_LABELS[doc.kind]} ${index + 1}`;
+}
+
+const phoneHref = (e164: string) => `tel:${e164}`;
+
+let application: ApplicationRow | null = null;
+let docs: (DocumentRow & { url: string | null })[] = [];
+
+if (token && UUID_RE.test(token) && isSupabaseConfigured()) {
+  const rows = await selectRows<ApplicationRow>("applications", `view_token=eq.${token}&select=*`);
+  application = rows[0] ?? null;
+
+  if (application) {
+    const rawDocs = await selectRows<DocumentRow>(
+      "application_documents",
+      `application_id=eq.${application.id}&select=kind,storage_path,mime&order=created_at.asc`,
+    );
+    docs = await Promise.all(
+      rawDocs.map(async (doc) => ({ ...doc, url: await createSignedReadUrl(doc.storage_path, 600) })),
+    );
+  }
+}
+
+const whatsappHref = application ? `https://wa.me/${application.whatsapp.replace(/[^0-9]/g, "")}` : "";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Application review</title>
+  </head>
+  <body>
+    <main class="container review-page">
+      {
+        !application ? (
+          <div class="review-empty">
+            <h1>Not found</h1>
+            <p>This link is invalid or the application no longer exists.</p>
+          </div>
+        ) : (
+          <>
+            <div class="review-header">
+              <div>
+                <span class={`status-badge status-badge--${application.status}`}>{application.status.replace("_", " ")}</span>
+                <h1>{application.ref_code}</h1>
+                <p class="review-meta">
+                  Submitted {application.submitted_at ? new Date(application.submitted_at).toLocaleString("en-SG") : "—"} · {application.country}
+                </p>
+              </div>
+              <a href={whatsappHref} class="btn btn-primary">
+                <Icon name="message" size={18} />
+                Chat on WhatsApp
+              </a>
+            </div>
+
+            <div class="notice notice--muted" style="margin-bottom: 24px;">
+              This page is only accessible via this exact link — no login. Don't forward it; treat it like the applicant's personal data, because it is.
+            </div>
+
+            <div class="review-grid">
+              <section class="review-card">
+                <h2>Applicant</h2>
+                <dl class="review-dl">
+                  <dt>Full name</dt><dd>{application.full_name}</dd>
+                  <dt>ID ({application.id_type.toUpperCase()})</dt><dd>{application.id_number}</dd>
+                  {application.residency_status && (
+                    <>
+                      <dt>Residency status</dt>
+                      <dd>{RESIDENCY_LABELS[application.residency_status] ?? application.residency_status}</dd>
+                    </>
+                  )}
+                  {application.pass_issue_date && (
+                    <>
+                      <dt>Pass issued</dt><dd>{application.pass_issue_date}</dd>
+                    </>
+                  )}
+                  {application.pass_expiry_date && (
+                    <>
+                      <dt>Pass expires</dt><dd>{application.pass_expiry_date}</dd>
+                    </>
+                  )}
+                  <dt>Date of birth</dt><dd>{application.date_of_birth}</dd>
+                  <dt>WhatsApp</dt><dd><a href={whatsappHref}>{application.whatsapp}</a></dd>
+                  <dt>Email</dt><dd><a href={`mailto:${application.email}`}>{application.email}</a></dd>
+                  <dt>Resides locally</dt><dd>{application.resides_locally ? "Yes" : "No"}</dd>
+                </dl>
+              </section>
+
+              <section class="review-card">
+                <h2>Employment</h2>
+                <dl class="review-dl">
+                  <dt>Status</dt><dd>{application.employment_status}</dd>
+                  <dt>Employer</dt><dd>{application.employer_name}</dd>
+                  {application.office_phone && (
+                    <>
+                      <dt>Office / boss / manager</dt><dd><a href={phoneHref(application.office_phone)}>{application.office_phone}</a></dd>
+                    </>
+                  )}
+                  <dt>Monthly income</dt><dd>{application.currency} {application.monthly_income}</dd>
+                  {application.bank_account_number && (
+                    <>
+                      <dt>Bank account</dt><dd>{application.bank_name} · {application.bank_account_number}</dd>
+                    </>
+                  )}
+                </dl>
+              </section>
+
+              <section class="review-card">
+                <h2>Loan</h2>
+                <dl class="review-dl">
+                  <dt>Amount</dt><dd>{application.currency} {application.loan_amount}</dd>
+                  <dt>Tenure</dt><dd>{application.tenure_months} months</dd>
+                  <dt>Purpose</dt><dd>{application.purpose}</dd>
+                </dl>
+              </section>
+            </div>
+
+            <div class="review-grid" style="margin-top: 16px;">
+              {([["next_of_kin", "Next of kin"], ["emergency_contact", "Emergency contact"]] as const).map(([column, heading]) =>
+                [1, 2].map((n) => {
+                  const name = application![`${column}_${n}_name` as keyof ApplicationRow] as string | null;
+                  const relationship = application![`${column}_${n}_relationship` as keyof ApplicationRow] as string | null;
+                  const phone = application![`${column}_${n}_phone` as keyof ApplicationRow] as string | null;
+                  return (
+                    name && (
+                      <section class="review-card">
+                        <h2>{heading} {n}</h2>
+                        <dl class="review-dl">
+                          <dt>Name</dt><dd>{name}</dd>
+                          {relationship && (
+                            <>
+                              <dt>Relationship</dt><dd>{RELATIONSHIP_LABELS[relationship] ?? relationship}</dd>
+                            </>
+                          )}
+                          <dt>Phone</dt><dd>{phone && <a href={phoneHref(phone)}>{phone}</a>}</dd>
+                        </dl>
+                      </section>
+                    )
+                  );
+                }),
+              )}
+            </div>
+
+            <section class="review-card" style="margin-top: 24px;">
+              <h2>Documents</h2>
+              <div class="review-docs">
+                {
+                  docs.map((doc) => (
+                    <div class="review-doc">
+                      <p class="review-doc__label">{docLabel(doc)}</p>
+                      {doc.url && doc.mime !== "application/pdf" ? (
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                          <img src={doc.url} alt={docLabel(doc)} loading="lazy" />
+                        </a>
+                      ) : doc.url ? (
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">
+                          Open PDF
+                        </a>
+                      ) : (
+                        <p class="review-doc__missing">Unavailable</p>
+                      )}
+                    </div>
+                  ))
+                }
+                {docs.length === 0 && <p style="color: var(--color-text-muted);">No documents uploaded.</p>}
+              </div>
+              <p class="review-doc__note">Document links expire in 10 minutes — reload this page for fresh ones.</p>
+            </section>
+          </>
+        )
+      }
+    </main>
+
+    <style>
+      .review-page {
+        max-width: 900px;
+        padding-block: 40px;
+      }
+
+      .review-empty {
+        text-align: center;
+        padding-block: 80px;
+      }
+
+      .review-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        margin-bottom: 8px;
+      }
+
+      .review-header h1 {
+        margin: 4px 0 0;
+      }
+
+      .review-meta {
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        margin: 4px 0 0;
+      }
+
+      .status-badge {
+        display: inline-block;
+        text-transform: capitalize;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: var(--color-surface-alt);
+        color: var(--color-primary-dark);
+      }
+
+      .status-badge--approved {
+        background: #e6f4ea;
+        color: #1e7a3d;
+      }
+
+      .status-badge--rejected,
+      .status-badge--cancelled {
+        background: var(--color-danger-bg);
+        color: var(--color-danger);
+      }
+
+      .status-badge--in_review {
+        background: var(--color-warning-bg);
+        color: #92650e;
+      }
+
+      .review-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 1fr;
+      }
+
+      @media (min-width: 700px) {
+        .review-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      .review-card {
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+      }
+
+      .review-card h2 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+      }
+
+      .review-dl {
+        margin: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .review-dl dt {
+        font-size: 0.78rem;
+        color: var(--color-text-muted);
+      }
+
+      .review-dl dd {
+        margin: 0 0 8px;
+        font-weight: 600;
+        word-break: break-word;
+      }
+
+      .review-docs {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (min-width: 600px) {
+        .review-docs {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
+      .review-doc__label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .review-doc img {
+        width: 100%;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+      }
+
+      .review-doc__missing {
+        color: var(--color-text-muted);
+        font-size: 0.85rem;
+      }
+
+      .review-doc__note {
+        color: var(--color-text-muted);
+        font-size: 0.8rem;
+        margin: 16px 0 0;
+      }
+    </style>
+  </body>
+</html>

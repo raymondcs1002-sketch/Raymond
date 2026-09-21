@@ -1,0 +1,6 @@
+---
+// SGD is the only active market for now — no picker, no visible redirect.
+// Astro.rewrite renders the /sgd home page in place, so the address bar
+// stays on "/". See src/lib/page-guard.ts for the enabled-market check.
+return Astro.rewrite("/sgd/");
+---

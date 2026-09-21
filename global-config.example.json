@@ -1,0 +1,189 @@
+{
+  "siteName": "MyLoan",
+  "siteUrl": "https://myloan-fx4f6usk8-rustamefends-3165.vercel.app/",
+  "countries": {
+    "MY": {
+      "enabled": false,
+      "entityName": "MyLoan Sdn Bhd",
+      "licenseNo": "Pending — moneylender's licence (KPKT) not yet registered",
+      "loanMin": 1000,
+      "loanMax": 10000,
+      "loanStep": 100,
+      "tenureMinMonths": 1,
+      "tenureMaxMonths": 12,
+      "interestRatePerMonth": 1.5,
+      "processingFeePercent": 0,
+      "minAge": 21,
+      "maxAge": 60,
+      "minMonthlyIncome": 2000,
+      "residency": "Malaysian citizens and permanent residents",
+      "approvalTime": "within 1 business day",
+      "whatsappNumber": "60123456789",
+      "supportEmail": "rustamefends@gmail.com",
+      "notifyEmail": "rustamefends@gmail.com",
+      "officeAddress": "Kuala Lumpur, Malaysia",
+      "repaymentTable": [
+        {
+          "amount": 1000,
+          "options": [
+            { "tenureMonths": 6, "monthlyInstalment": 180, "ratePercent": 8 }
+          ]
+        },
+        {
+          "amount": 5000,
+          "options": [
+            { "tenureMonths": 12, "monthlyInstalment": 475, "ratePercent": 14 }
+          ]
+        }
+      ]
+    },
+    "SG": {
+      "enabled": true,
+      "entityName": "MyLoan Pte Ltd",
+      "licenseNo": "Pending — moneylender's licence (Registry of Moneylenders) not yet registered",
+      "loanMin": 500,
+      "loanMax": 5000,
+      "loanStep": 100,
+      "tenureMinMonths": 1,
+      "tenureMaxMonths": 12,
+      "interestRatePerMonth": 4,
+      "processingFeePercent": 0,
+      "minAge": 21,
+      "maxAge": 60,
+      "minMonthlyIncome": 1500,
+      "residency": "Singapore citizens, permanent residents, and valid work pass holders (Employment Pass / S Pass / Work Permit)",
+      "approvalTime": "within 1 business day",
+      "whatsappNumber": "6585784648",
+      "supportEmail": "raymondcs1002@gmail.com",
+      "notifyEmail": "raymondcs1002@gmail.com",
+      "officeAddress": "Singapore",
+      "repaymentTable": [
+        {
+          "amount": 1000,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 150, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 105, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 57, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 1500,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 225, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 157, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 85, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 2000,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 300, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 209, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 113, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 2500,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 375, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 260, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 141, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 3000,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 450, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 313, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 169, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 3500,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 525, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 365, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 197, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 4000,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 600, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 417, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 225, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 4500,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 675, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 469, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 254, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 5000,
+          "options": [
+            { "tenureMonths": 8, "monthlyInstalment": 750, "ratePercent": 20 },
+            { "tenureMonths": 12, "monthlyInstalment": 521, "ratePercent": 25 },
+            { "tenureMonths": 24, "monthlyInstalment": 282, "ratePercent": 35 }
+          ]
+        },
+        {
+          "amount": 10000,
+          "options": [
+            {
+              "tenureMonths": 12,
+              "monthlyInstalment": 1042,
+              "ratePercent": 25
+            },
+            { "tenureMonths": 24, "monthlyInstalment": 563, "ratePercent": 35 },
+            { "tenureMonths": 36, "monthlyInstalment": 389, "ratePercent": 40 },
+            { "tenureMonths": 48, "monthlyInstalment": 303, "ratePercent": 45 }
+          ]
+        },
+        {
+          "amount": 15000,
+          "options": [
+            {
+              "tenureMonths": 12,
+              "monthlyInstalment": 1563,
+              "ratePercent": 25
+            },
+            { "tenureMonths": 24, "monthlyInstalment": 844, "ratePercent": 35 },
+            { "tenureMonths": 36, "monthlyInstalment": 584, "ratePercent": 40 },
+            { "tenureMonths": 48, "monthlyInstalment": 454, "ratePercent": 45 },
+            { "tenureMonths": 60, "monthlyInstalment": 375, "ratePercent": 50 }
+          ]
+        },
+        {
+          "amount": 20000,
+          "options": [
+            {
+              "tenureMonths": 24,
+              "monthlyInstalment": 1125,
+              "ratePercent": 35
+            },
+            { "tenureMonths": 36, "monthlyInstalment": 778, "ratePercent": 40 },
+            { "tenureMonths": 48, "monthlyInstalment": 605, "ratePercent": 45 },
+            { "tenureMonths": 60, "monthlyInstalment": 500, "ratePercent": 50 }
+          ]
+        },
+        {
+          "amount": 25000,
+          "options": [
+            {
+              "tenureMonths": 24,
+              "monthlyInstalment": 1405,
+              "ratePercent": 35
+            },
+            { "tenureMonths": 36, "monthlyInstalment": 970, "ratePercent": 40 },
+            { "tenureMonths": 48, "monthlyInstalment": 755, "ratePercent": 45 },
+            { "tenureMonths": 60, "monthlyInstalment": 625, "ratePercent": 50 }
+          ]
+        }
+      ]
+    }
+  }
+}

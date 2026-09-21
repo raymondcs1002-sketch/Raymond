@@ -1,0 +1,41 @@
+---
+import Base from "../../layouts/Base.astro";
+import Hero from "../../components/Hero.astro";
+import FeatureHighlights from "../../components/FeatureHighlights.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import HowToApply from "../../components/HowToApply.astro";
+import ResponsibleLending from "../../components/ResponsibleLending.astro";
+import Eligibility from "../../components/Eligibility.astro";
+import RiskDisclosure from "../../components/RiskDisclosure.astro";
+import Calculator from "../../components/Calculator.astro";
+import Faq from "../../components/Faq.astro";
+import ContactCta from "../../components/ContactCta.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+import { formatMoney } from "../../lib/format";
+import { getMinMaxAmount } from "../../lib/repayment";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+const amountRange = getMinMaxAmount(content.repaymentTable);
+---
+
+<Base
+  country={country}
+  siteName={siteName}
+  content={content}
+  title={`Fast personal loans in ${rules.label}`}
+  description={`Apply for a personal loan in ${rules.label} in minutes. Check your eligibility, borrow ${formatMoney(amountRange.min, rules)}–${formatMoney(amountRange.max, rules)}, and get a decision fast.`}
+>
+  <Hero country={country} content={content} rules={rules} />
+  <FeatureHighlights />
+  <ProductCard country={country} content={content} rules={rules} />
+  <HowToApply />
+  <ResponsibleLending />
+  <Eligibility content={content} rules={rules} />
+  <RiskDisclosure />
+  <Calculator content={content} rules={rules} />
+  <Faq />
+  <ContactCta country={country} content={content} />
+</Base>

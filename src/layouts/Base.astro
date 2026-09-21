@@ -1,0 +1,70 @@
+---
+import type { CountryCode } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import StickyCta from "../components/StickyCta.astro";
+import "../styles/global.css";
+
+interface Props {
+  country: CountryCode;
+  siteName: string;
+  content: CountryContent;
+  title: string;
+  description: string;
+}
+
+const { country, siteName, content, title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://example.com").toString();
+
+// The sticky "Apply" bar is fixed to the bottom of the viewport, so on the
+// application form itself it covers the Back/Continue buttons — and tapping it
+// reloads /apply, throwing the applicant back to step 1.
+const hideStickyCta = Astro.url.pathname.includes("/apply");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · {siteName}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={`${title} · ${siteName}`} />
+    <meta property="og:description" content={description} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0f766e" />
+  </head>
+  <body style={hideStickyCta ? "--sticky-cta-height: 0px" : undefined}>
+    <Header country={country} siteName={siteName} content={content} />
+    <main>
+      <slot />
+    </main>
+    <Footer country={country} siteName={siteName} content={content} />
+    {!hideStickyCta && <StickyCta country={country} content={content} />}
+
+    <script>
+      // Production only. In dev the worker caches Vite's CSS/JS cache-first,
+      // so edits silently stop showing up — the page keeps rendering an old
+      // stylesheet. Anything left installed from an earlier dev session is
+      // torn down here, otherwise it outlives this change.
+      if ("serviceWorker" in navigator) {
+        if (import.meta.env.PROD) {
+          window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/sw.js").catch(() => {
+              // Non-critical: the site works fully without the service worker.
+            });
+          });
+        } else {
+          navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister()));
+          window.caches?.keys().then((keys) => keys.forEach((key) => window.caches.delete(key)));
+        }
+      }
+    </script>
+  </body>
+</html>

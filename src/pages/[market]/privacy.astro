@@ -1,0 +1,73 @@
+---
+import Base from "../../layouts/Base.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+import { en } from "../../i18n/en";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+const pdpa = country === "my" ? "Personal Data Protection Act 2010" : "Personal Data Protection Act 2012";
+---
+
+<!-- DRAFT: requires legal review before launch -->
+<Base country={country} siteName={siteName} content={content} title="Privacy Policy" description={`How ${content.entityName} collects and uses your personal data.`}>
+  <section class="section">
+    <div class="container" style="max-width: 720px;">
+      <div class="notice notice--draft">{en.legal.draftNotice}</div>
+
+      <h1>Privacy Policy</h1>
+      <p>
+        This Privacy Policy explains how <strong>{content.entityName}</strong> ("we", "us") collects, uses, and
+        protects your personal data when you apply for a loan through {siteName}, in accordance with the
+        {" "}{pdpa}.
+      </p>
+
+      <h2>1. What we collect</h2>
+      <p>When you apply, we collect:</p>
+      <ul class="check-list">
+        <li>Your full name, {rules.idLabel}, and date of birth</li>
+        <li>Your WhatsApp number and email address</li>
+        <li>Your employment status, employer name, and monthly income</li>
+        <li>Your requested loan amount, tenure, and purpose</li>
+        <li>Identity and income documents you upload (ID front/back, selfie, payslips)</li>
+      </ul>
+
+      <h2>2. How we use it</h2>
+      <p>
+        We use your data solely to assess your loan application, verify your identity, contact you about your
+        application, and comply with our legal and regulatory obligations as a licensed moneylender.
+      </p>
+
+      <h2>3. Storage and security</h2>
+      <p>
+        Your data and documents are stored in access-controlled systems. Identity documents are kept in a private
+        storage bucket that is never publicly accessible, and are not included in internal email notifications.
+      </p>
+
+      <h2>4. Who we share it with</h2>
+      <p>
+        We do not sell your data. We may disclose it to regulators, credit reference agencies, or law enforcement
+        where required by law.
+      </p>
+
+      <h2>5. Your rights</h2>
+      <p>
+        You may request access to, correction of, or deletion of your personal data, or withdraw your consent for
+        us to process it, by contacting us at <a href={`mailto:${content.supportEmail}`}>{content.supportEmail}</a>.
+        Withdrawing consent may mean we can no longer process your application.
+      </p>
+
+      <h2>6. Retention</h2>
+      <p>
+        We retain application data for as long as required for the purposes above and to meet our legal and
+        regulatory obligations, after which it is securely deleted.
+      </p>
+
+      <h2>7. Contact</h2>
+      <p>
+        Questions about this policy? Contact us at <a href={`mailto:${content.supportEmail}`}>{content.supportEmail}</a>.
+      </p>
+    </div>
+  </section>
+</Base>

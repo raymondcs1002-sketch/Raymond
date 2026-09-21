@@ -1,0 +1,35 @@
+---
+import type { CountryContent } from "../lib/config.defaults";
+import type { CountryCode } from "../lib/countries";
+import { en } from "../i18n/en";
+import ApplyButton from "./ApplyButton.astro";
+import Icon from "./Icon.astro";
+
+interface Props {
+  country: CountryCode;
+  content: CountryContent;
+}
+
+const { country, content } = Astro.props;
+const whatsappHref = `https://wa.me/${content.whatsappNumber.replace(/[^0-9]/g, "")}`;
+---
+
+<section class="section section--alt">
+  <div class="container" style="text-align:center; max-width: 640px;">
+    <h2>{en.contact.title}</h2>
+    <p style="color: var(--color-text-muted);">
+      <Icon name="mail" size={16} style="display:inline; vertical-align:-3px; margin-right:4px;" />
+      {content.supportEmail}
+      &nbsp;·&nbsp;
+      <Icon name="map-pin" size={16} style="display:inline; vertical-align:-3px; margin-right:4px;" />
+      {content.officeAddress}
+    </p>
+    <div class="hero__actions" style="justify-content:center;">
+      <a href={whatsappHref} class="btn btn-secondary">
+        <Icon name="message" size={18} />
+        {en.contact.whatsappCta}
+      </a>
+      <ApplyButton country={country} />
+    </div>
+  </div>
+</section>

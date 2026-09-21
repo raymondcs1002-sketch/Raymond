@@ -1,0 +1,56 @@
+---
+import type { CountryRules } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import type { CountryCode } from "../lib/countries";
+import { en } from "../i18n/en";
+import { formatMoney, formatTenure } from "../lib/format";
+import { getMinMaxAmount, getMinMaxTenure, getMinMaxRate } from "../lib/repayment";
+import ApplyButton from "./ApplyButton.astro";
+
+interface Props {
+  country: CountryCode;
+  content: CountryContent;
+  rules: CountryRules;
+}
+
+const { country, content, rules } = Astro.props;
+const table = content.repaymentTable;
+const amountRange = getMinMaxAmount(table);
+const tenureRange = getMinMaxTenure(table);
+const rateRange = getMinMaxRate(table);
+---
+
+<section class="section section--alt" id="loans">
+  <div class="container">
+    <div class="product-card">
+      <span class="eyebrow">{rules.label}</span>
+      <h2>{en.product.title}</h2>
+
+      <div class="product-card__grid">
+        <div class="product-card__item">
+          <span class="product-card__item-label">{en.product.amountLabel}</span>
+          <span class="product-card__item-value">{formatMoney(amountRange.min, rules)}–{formatMoney(amountRange.max, rules)}</span>
+        </div>
+        <div class="product-card__item">
+          <span class="product-card__item-label">{en.product.tenureLabel}</span>
+          <span class="product-card__item-value">{formatTenure(tenureRange.min)}–{formatTenure(tenureRange.max)}</span>
+        </div>
+        <div class="product-card__item">
+          <span class="product-card__item-label">{en.product.rateLabel}</span>
+          <span class="product-card__item-value">{rateRange.min}%–{rateRange.max}%</span>
+        </div>
+        <div class="product-card__item">
+          <span class="product-card__item-label">{en.product.ageLabel}</span>
+          <span class="product-card__item-value">{content.minAge}–{content.maxAge} years</span>
+        </div>
+        <div class="product-card__item">
+          <span class="product-card__item-label">{en.product.incomeLabel}</span>
+          <span class="product-card__item-value">{formatMoney(content.minMonthlyIncome, rules)}+</span>
+        </div>
+      </div>
+
+      <p class="product-card__note">{en.product.noHiddenFees} See the calculator below for the exact instalment on any amount.</p>
+      <ApplyButton country={country} label={en.product.cta} />
+    </div>
+  </div>
+</section>

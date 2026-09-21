@@ -1,0 +1,26 @@
+---
+import "../styles/global.css";
+
+Astro.response.status = 404;
+const { siteName } = Astro.locals.siteContent;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page not found · {siteName}</title>
+  </head>
+  <body>
+    <main class="container" style="min-height: 100dvh; display:grid; place-items:center; text-align:center;">
+      <div>
+        <h1>Page not found</h1>
+        <p style="color: var(--color-text-muted); margin-bottom: 24px;">
+          The page you're looking for doesn't exist, or isn't available in your country yet.
+        </p>
+        <a class="btn btn-primary" href="/">Back to home</a>
+      </div>
+    </main>
+  </body>
+</html>

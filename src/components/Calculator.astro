@@ -1,0 +1,81 @@
+---
+import type { CountryRules } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import { en } from "../i18n/en";
+import { formatMoney } from "../lib/format";
+import { getMinMaxAmount, getTenureOptions, summarize, AMOUNT_STEP } from "../lib/repayment";
+
+interface Props {
+  content: CountryContent;
+  rules: CountryRules;
+}
+
+const { content, rules } = Astro.props;
+const schedule = content.repaymentTable;
+const { min: minAmount, max: maxAmount } = getMinMaxAmount(schedule);
+
+const defaultAmount = Math.round((minAmount + maxAmount) / 2 / AMOUNT_STEP) * AMOUNT_STEP;
+const defaultOptions = getTenureOptions(schedule, defaultAmount);
+const defaultOption = defaultOptions[Math.floor(defaultOptions.length / 2)];
+const initial = summarize(defaultOption, defaultAmount);
+---
+
+<section class="section section--alt" id="calculator">
+  <div class="container">
+    <div class="section-header section-header--center">
+      <h2>{en.calculator.title}</h2>
+      <p style="color: var(--color-text-muted);">{en.calculator.subtitle}</p>
+    </div>
+
+    <div
+      class="calculator"
+      data-calculator
+      data-currency-symbol={rules.currencySymbol}
+      data-locale={rules.locale}
+      data-schedule={JSON.stringify(schedule)}
+    >
+      <div>
+        <div class="field">
+          <label for="calc-amount">
+            <span>{en.calculator.amountLabel}</span>
+            <output id="calc-amount-output" for="calc-amount">{formatMoney(defaultAmount, rules)}</output>
+          </label>
+          <input type="range" id="calc-amount" data-calc-amount min={minAmount} max={maxAmount} step={AMOUNT_STEP} value={defaultAmount} />
+        </div>
+
+        <div class="field">
+          <label>
+            <span>{en.calculator.tenureLabel}</span>
+          </label>
+          <div class="tenure-pills" data-calc-tenure-group>
+            {
+              defaultOptions.map((option, i) => (
+                <button type="button" class="tenure-pill" data-tenure-pill data-value={option.tenureMonths} aria-pressed={i === Math.floor(defaultOptions.length / 2)}>
+                  {option.tenureMonths} {en.calculator.months}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="calculator__results">
+        <div class="calculator__row">
+          <span>{en.calculator.totalInterest}</span>
+          <span data-calc-interest>{formatMoney(initial.totalInterest, rules)}</span>
+        </div>
+        <div class="calculator__row">
+          <span>{en.calculator.totalRepayment}</span>
+          <span data-calc-total>{formatMoney(initial.totalRepayment, rules)}</span>
+        </div>
+        <div class="calculator__row calculator__row--total">
+          <span>{en.calculator.monthlyInstalment}</span>
+          <span data-calc-instalment>{formatMoney(initial.monthlyInstalment, rules)}</span>
+        </div>
+        <p class="product-card__note" style="margin-top: 12px; margin-bottom: 0;">{en.calculator.estimateNote}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="../scripts/calculator.ts"></script>

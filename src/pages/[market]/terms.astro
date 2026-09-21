@@ -1,0 +1,75 @@
+---
+import Base from "../../layouts/Base.astro";
+import { resolveMarketParam } from "../../lib/page-guard";
+import { en } from "../../i18n/en";
+
+const resolved = resolveMarketParam(Astro.params.market, Astro.locals.siteContent);
+if (!resolved) return Astro.rewrite("/404");
+const { country, content, rules } = resolved;
+const { siteName } = Astro.locals.siteContent;
+const law = country === "my" ? "Malaysia, including the Moneylenders Act 1951" : "Singapore, including the Moneylenders Act 2008";
+---
+
+<!-- DRAFT: requires legal review before launch -->
+<Base country={country} siteName={siteName} content={content} title="Terms & Conditions" description={`Terms and conditions for applying through ${siteName}.`}>
+  <section class="section">
+    <div class="container" style="max-width: 720px;">
+      <div class="notice notice--draft">{en.legal.draftNotice}</div>
+
+      <h1>Terms & Conditions</h1>
+      <p>
+        These terms govern your use of {siteName} to submit a loan application to <strong>{content.entityName}</strong>
+        ({content.licenseNo}) in {rules.label}.
+      </p>
+
+      <h2>1. Eligibility</h2>
+      <p>
+        You must be aged between {content.minAge} and {content.maxAge}, meet our residency and income requirements,
+        and provide accurate, complete information and documents.
+      </p>
+
+      <h2>2. No guaranteed approval</h2>
+      <p>
+        Submitting an application is an instant eligibility check, not a guarantee of approval. Every application is
+        assessed individually, and we may request additional information or decline an application at our
+        discretion.
+      </p>
+
+      <h2>3. Loan terms</h2>
+      <p>
+        The loan amounts, tenures, and monthly instalments shown on this site and in our calculator reflect our
+        current rate card, but are not a binding offer. Your actual approved amount, tenure, and repayment terms
+        will be confirmed in a separate loan agreement before disbursal.
+      </p>
+
+      <h2>4. Your responsibilities</h2>
+      <p>
+        You agree to provide truthful information, keep your contact details up to date, and repay any approved
+        loan according to the agreed schedule.
+      </p>
+
+      <h2>5. Communication</h2>
+      <p>
+        By applying, you consent to being contacted on the WhatsApp number and email address you provide, regarding
+        your application and any approved loan.
+      </p>
+
+      <h2>6. Limitation of liability</h2>
+      <p>
+        {siteName} and {content.entityName} are not liable for any indirect or consequential loss arising from your
+        use of this site, to the fullest extent permitted by law.
+      </p>
+
+      <h2>7. Governing law</h2>
+      <p>These terms are governed by the laws of {law}.</p>
+
+      <h2>8. Changes</h2>
+      <p>We may update these terms from time to time; continued use of this site means you accept the changes.</p>
+
+      <h2>9. Contact</h2>
+      <p>
+        Questions? Contact us at <a href={`mailto:${content.supportEmail}`}>{content.supportEmail}</a>.
+      </p>
+    </div>
+  </section>
+</Base>

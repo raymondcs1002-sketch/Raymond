@@ -1,0 +1,61 @@
+---
+import { COUNTRY_TO_MARKET, type CountryCode } from "../lib/countries";
+import type { CountryContent } from "../lib/config.defaults";
+import { en } from "../i18n/en";
+import Icon from "./Icon.astro";
+
+interface Props {
+  country: CountryCode;
+  siteName: string;
+  content: CountryContent;
+}
+
+const { country, siteName, content } = Astro.props;
+const base = `/${COUNTRY_TO_MARKET[country]}`;
+const year = new Date().getFullYear();
+const whatsappHref = `https://wa.me/${content.whatsappNumber.replace(/[^0-9]/g, "")}`;
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div>
+        <h3>{siteName}</h3>
+        <p>
+          {en.footer.providedBy} <strong>{content.entityName}</strong>. {en.footer.managedByNotice}
+        </p>
+      </div>
+
+      <div>
+        <h3>{en.footer.quickLinks}</h3>
+        <ul class="site-footer__links">
+          <li><a href={`${base}/`}>{en.nav.home}</a></li>
+          <li><a href={`${base}/about`}>{en.nav.about}</a></li>
+          <li><a href={`${base}/contact`}>{en.nav.contact}</a></li>
+          <li><a href={`${base}/apply`}>{en.nav.apply}</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3>{en.footer.legal}</h3>
+        <ul class="site-footer__links">
+          <li><a href={`${base}/privacy`}>{en.footer.privacy}</a></li>
+          <li><a href={`${base}/terms`}>{en.footer.terms}</a></li>
+          <li><a href={`${base}/disclaimer`}>{en.footer.disclaimer}</a></li>
+        </ul>
+        <ul class="site-footer__links" style="margin-top: 12px;">
+          <li>
+            <a href={whatsappHref}><Icon name="message" size={16} /> WhatsApp</a>
+          </li>
+          <li>
+            <a href={`mailto:${content.supportEmail}`}><Icon name="mail" size={16} /> {content.supportEmail}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      &copy; {year} {content.entityName}. All rights reserved.
+    </div>
+  </div>
+</footer>
