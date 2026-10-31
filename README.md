@@ -11,7 +11,7 @@ team follows up on WhatsApp.
 - **SGD-only for now.** MYR is disabled (`countries.MY.enabled: false` in Global Config) but the code path stays intact — flip that one field to bring it back, no redeploy needed. `/` and the short paths (`/apply`, `/about`, ...) transparently serve `/sgd/...` (`Astro.rewrite`, not a redirect — the address bar stays clean).
 - **Pricing is a fixed rate card, not a formula.** `src/lib/repayment.ts` holds the loan-amount × tenure × instalment table the lender actually offers (`repaymentTable` in Global Config) — the calculator and apply form look values up, they don't compute them. `src/lib/calc.ts` (percentage-based) is kept only as a fallback for a market without a table.
 
-## Why Global Config?
+## Why Global Config?.
 
 Loan terms, licence numbers, and contact details change more often than the
 code does. They live in **Vercel Global Config** (renamed from "Edge
